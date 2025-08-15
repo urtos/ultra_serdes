@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(ultra_serdesTool C)
 
-option(TARGET_ARCH "目标架构 (x86/arm/riscv)" "x86")
+option(TARGET_ARCH "目标架构 (x86/arm/riscv/aarch64)" "x86")
 
 include(cmake/toolchain.cmake)
 
@@ -33,7 +33,6 @@ target_link_libraries(ultra_serdes
     ultra_serdes_core
 )
 
-
 enable_testing()
 
 file(GLOB TEST_SOURCES "tests/*.c")
@@ -51,7 +50,7 @@ target_include_directories(test_ultra_serdes
 
 if(QEMU_RUNNER)
     add_test(NAME ultra_serdesTest-${TARGET_ARCH}
-        COMMAND ${QEMU_RUNNER} $<TARGET_FILE:test_ultra_serdes>
+        COMMAND ${QEMU_RUNNER} -L ${SYSROOT_PATH} $<TARGET_FILE:test_ultra_serdes>
     )
 else()
     add_test(NAME ultra_serdesTest-${TARGET_ARCH}
