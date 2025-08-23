@@ -34,32 +34,37 @@ target_link_libraries(ultra_serdes
 )
 
 enable_testing()
-
 file(GLOB TEST_SOURCES "tests/*.c")
-add_executable(test_ultra_serdes
-    ${TEST_SOURCES}
-)
-target_link_libraries(test_ultra_serdes
-    PRIVATE
-    ultra_serdes_core
-)
-target_include_directories(test_ultra_serdes
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
+foreach(TEST_SOURCE ${TEST_SOURCES})
+    get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
 
-if(QEMU_RUNNER)
-    add_test(NAME ultra_serdesTest-${TARGET_ARCH}
-        COMMAND ${QEMU_RUNNER} -L ${SYSROOT_PATH} $<TARGET_FILE:test_ultra_serdes>
+    add_executable(test_ultra_serdes_${TEST_NAME}
+            ${TEST_SOURCE}
     )
-else()
-    add_test(NAME ultra_serdesTest-${TARGET_ARCH}
-        COMMAND $<TARGET_FILE:test_ultra_serdes>
-    )
-endif()
 
-set_tests_properties(ultra_serdesTest-${TARGET_ARCH}
-    PROPERTIES
-    TIMEOUT 10
-    PASS_REGULAR_EXPRESSION "All tests passed"
-)
+    target_link_libraries(test_ultra_serdes_${TEST_NAME}
+            PRIVATE
+            ultra_serdes_core
+    )
+
+    target_include_directories(test_ultra_serdes_${TEST_NAME}
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    if(QEMU_RUNNER)
+        add_test(NAME ultra_serdesTest-${TARGET_ARCH}-${TEST_NAME}
+                COMMAND ${QEMU_RUNNER} -L ${SYSROOT_PATH} $<TARGET_FILE:test_ultra_serdes_${TEST_NAME}>
+        )
+    else()
+        add_test(NAME ultra_serdesTest-${TARGET_ARCH}-${TEST_NAME}
+                COMMAND $<TARGET_FILE:test_ultra_serdes_${TEST_NAME}>
+        )
+    endif()
+
+    set_tests_properties(ultra_serdesTest-${TARGET_ARCH}-${TEST_NAME}
+            PROPERTIES
+            TIMEOUT 10
+            PASS_REGULAR_EXPRESSION "All tests passed"
+    )
+endforeach()
